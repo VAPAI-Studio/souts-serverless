@@ -1,13 +1,26 @@
-# clean base image containing only comfyui, comfy-cli and comfyui-manager
-FROM runpod/worker-comfyui:5.5.1-base
+# Start from an official RunPod ComfyUI worker image
+# Choose a specific version tag from the RunPod Docker Hub repo (e.g., -sdxl, -base)
+FROM runpod/worker-comfyui:5.2.0-base
 
-# install custom nodes into comfyui (first node with --mode remote to fetch updated cache)
-# Could not resolve unknown_registry node: PerpNegGuider — no aux_id (GitHub repo) provided, skipping
-# Could not resolve unknown_registry node: Power Lora Loader (rgthree) — no aux_id (GitHub repo) provided, skipping
+# Install any required system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
-# download models into comfyui
-RUN comfy model download --url https://huggingface.co/lzyvegetable/FLUX.1-dev/resolve/main/flux1-dev.safetensors --relative-path models/diffusion_models --filename flux1-dev.safetensors
-RUN comfy model download --url https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors --relative-path models/text_encoders --filename t5xxl_fp8_e4m3fn.safetensors
-RUN comfy model download --url https://huggingface.co/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_l.safetensors --relative-path models/text_encoders --filename clip_l.safetensors
-RUN comfy model download --url https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors --relative-path models/vae --filename ae.safetensors
-# COPY input/ /comfyui/input/
+# Set environment variable for Hugging Face cache to use the persistent volume
+ENV HF_HOME=/runpod-volume/models/huggingface
+
+# --- Custom Nodes Installation (Example) ---
+# Install custom nodes by cloning their repositories into the custom_nodes directory
+RUN git clone https://github.com /comfyui/custom_nodes/ComfyUI_Node_Manager
+# Add other custom nodes here
+
+# --- Model Symlinking / Configuration ---
+# The RunPod handler script typically manages symlinking models from /runpod-volume/models
+# You might need to add an extra_model_paths.yaml file to tell ComfyUI where to look for models
+# that the default handler doesn't cover.
+# ADD extra_model_paths.yaml /comfyui/extra_model_paths.yaml
+
+# The default entrypoint in the base image handles the rest of the startup process,
+# including mounting the network volume to /runpod-volume.
