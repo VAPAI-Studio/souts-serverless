@@ -20,7 +20,7 @@ RUN git clone https://github.com /comfyui/custom_nodes/ComfyUI_Node_Manager
 # The RunPod handler script typically manages symlinking models from /runpod-volume/models
 # You might need to add an extra_model_paths.yaml file to tell ComfyUI where to look for models
 # that the default handler doesn't cover.
-# ADD extra_model_paths.yaml /comfyui/extra_model_paths.yaml
+ADD extra_model_paths.yaml /comfyui/extra_model_paths.yaml
 
 # The default entrypoint in the base image handles the rest of the startup process,
 # including mounting the network volume to /runpod-volume.
